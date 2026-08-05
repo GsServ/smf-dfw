@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ms-basketball",
+    "date": "2026-07-12",
+    "endDate": null,
+    "title": "MS Boys & Girls Basketball",
+    "time": "4:00–9:00 PM",
+    "venue": "Archangel Michael",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "online-exams",
+    "date": "2026-07-18",
+    "endDate": "2026-07-26",
+    "title": "Online exams",
+    "time": "Closes 11:59 PM Jul 26",
+    "venue": "Online",
+    "milestone": true,
+    "notes": null
+  },
+  {
+    "id": "hs-basketball",
+    "date": "2026-07-19",
+    "endDate": null,
+    "title": "HS Boys & Girls Basketball",
+    "time": "4:00–9:00 PM",
+    "venue": "Archangel Michael",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "ms-hs-ping-pong",
+    "date": "2026-07-25",
+    "endDate": null,
+    "title": "MS & HS Ping Pong",
+    "time": "11:00 AM–5:00 PM",
+    "venue": "St. Mary",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "elementary-playoffs",
+    "date": "2026-07-26",
+    "endDate": null,
+    "title": "3rd–6th Basketball & Soccer Playoffs",
+    "time": "4:00–9:00 PM",
+    "venue": "Archangel Michael",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "hymns-submission-closes",
+    "date": "2026-07-26",
+    "endDate": null,
+    "title": "Hymns submission closes",
+    "time": "11:59 PM",
+    "venue": "Online form",
+    "milestone": true,
+    "notes": null
+  },
+  {
+    "id": "hs-jeopardy-hymns",
+    "date": "2026-08-02",
+    "endDate": null,
+    "title": "HS Jeopardy & Hymns",
+    "time": "3:00–9:00 PM",
+    "venue": "St. Mary",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "ms-girls-jeopardy",
+    "date": "2026-08-08",
+    "endDate": null,
+    "title": "MS Girls Jeopardy",
+    "time": "12:00–5:00 PM",
+    "venue": "Pope Kyrillos",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "ms-boys-jeopardy",
+    "date": "2026-08-09",
+    "endDate": null,
+    "title": "MS Boys Jeopardy",
+    "time": "2:30–6:30 PM",
+    "venue": "Pope Kyrillos",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "ms-hs-girls-volleyball",
+    "date": "2026-08-15",
+    "endDate": null,
+    "title": "MS & HS Girls Volleyball",
+    "time": "11:00 AM–5:00 PM",
+    "venue": "St. Abanoub",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "hs-soccer",
+    "date": "2026-08-22",
+    "endDate": null,
+    "title": "HS Soccer",
+    "time": "12:00–4:00 PM",
+    "venue": "Stampede",
+    "milestone": false,
+    "notes": null
+  },
+  {
+    "id": "ms-soccer",
+    "date": "2026-08-29",
+    "endDate": null,
+    "title": "MS Soccer",
+    "time": "12:00–4:00 PM",
+    "venue": "Stampede",
+    "milestone": false,
+    "notes": null
+  }
+]

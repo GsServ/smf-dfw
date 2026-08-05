@@ -1,0 +1,65 @@
+[
+  {
+    "id": "jeopardy-teams",
+    "heading": "Jeopardy teams",
+    "posted": "Posted Jul 22",
+    "defaultOpen": true,
+    "items": [
+      "Teams are mixed. Boys and girls compete together.",
+      "A team is **7 youth minimum, 10 maximum**.",
+      "More than 16 youth registered means you may form a second team. **Two teams per church is the limit.**",
+      "With two teams, your church's final score is the average of both.",
+      "Substitutions happen between games, never during one."
+    ]
+  },
+  {
+    "id": "hymns",
+    "heading": "Hymns",
+    "posted": "Posted Jul 1 · updated Jul 8",
+    "defaultOpen": false,
+    "items": [
+      "Middle school and high school perform the hymn **live**, with everyone attending.",
+      "If fewer than **70% of your registered youth** perform, your church drops one rank.",
+      "Elementary may split a grade group once. Both scores are averaged.",
+      "Recording groups cap at **25 children**. Over 30, split into two groups and record every required hymn with each.",
+      "3rd and 4th grade may record Golgotha in sections.",
+      "KG may record English and Coptic separately."
+    ]
+  },
+  {
+    "id": "exams",
+    "heading": "Exams",
+    "posted": "Posted Jun 24 · updated Jul 17",
+    "defaultOpen": false,
+    "items": [
+      "Online exams open Jul 18 and close automatically **Jul 26 at 11:59 PM**.",
+      "KG and PreK take Bible, memorization, and Coptic on **paper**. Print them, have your servants grade them, then enter scores in the shared sheet.",
+      "The Coptic exam is taken individually near the end of each Jeopardy day.",
+      "Travelling? Ask Abouna privately to open a specific exam for your church."
+    ]
+  },
+  {
+    "id": "sports",
+    "heading": "Sports",
+    "posted": "Posted Jul 1 · updated Jul 16",
+    "defaultOpen": false,
+    "items": [
+      "**No volleyball for MS and HS boys this year** — too few days available and very low turnout last year.",
+      "Ping pong is a church team competition. Send 3 per tournament: 3rd–4th (2 boys, 1 girl), 5th–6th boys, 5th–6th girls, 7th–8th boys, 7th–8th girls, HS boys, HS girls.",
+      "At sports events, **only servants and playing youth may attend**. Anyone else will be asked to leave.",
+      "Verify every name with the youth before sending a roster. Don't send names straight off the sign-up sheet."
+    ]
+  },
+  {
+    "id": "hosting-and-reimbursement",
+    "heading": "Hosting and reimbursement",
+    "posted": "Posted Jul 6 · updated Aug 1",
+    "defaultOpen": false,
+    "items": [
+      "The hosting church provides a light meal for guests — a sandwich, a snack, a drink.",
+      "Send receipts for food and equipment privately to Fr Akhnoukh at St. Meena for reimbursement.",
+      "Bring last year's trophy back. Trophies are reused, not reordered each year.",
+      "Keep an adequate servant-to-youth ratio for the whole event."
+    ]
+  }
+]

@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: theme('colors.ink');
+    /* Two faint 45° crosshatches (woven linen) over a radial lapis wash. */
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        rgba(237, 228, 210, 0.016) 0 1px,
+        transparent 1px 6px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        rgba(237, 228, 210, 0.016) 0 1px,
+        transparent 1px 6px
+      ),
+      radial-gradient(120% 70% at 50% -10%, #1a2b5a 0%, theme('colors.ink') 62%);
+    color: theme('colors.linen');
+    font-family: theme('fontFamily.sans');
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* One visible focus treatment everywhere, per the quality floor. */
+  :focus-visible {
+    outline: 2px solid theme('colors.gold');
+    outline-offset: 3px;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+@layer components {
+  /* Page gutter. clamp() keeps it proportional from 360px up to the max width. */
+  .wrap {
+    width: 100%;
+    max-width: theme('maxWidth.wrap');
+    margin-inline: auto;
+    padding-inline: clamp(20px, 5vw, 64px);
+  }
+
+  /* The vertical rule the Coptic markers sit on. */
+  .calendar-rule {
+    position: relative;
+  }
+  .calendar-rule::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(217, 164, 65, 0.26) 8%,
+      rgba(217, 164, 65, 0.26) 92%,
+      transparent
+    );
+  }
+  @media (min-width: 720px) {
+    .calendar-rule::before {
+      left: 19px;
+    }
+  }
+
+  /* Square bullets on the rule lists. */
+  .rule-bullet::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 5px;
+    height: 5px;
+    background: theme('colors.gold');
+    opacity: 0.65;
+  }
+}
+
+@layer utilities {
+  /* Staggered rise on the calendar rows. Delay is set inline, capped at 450ms. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise 0.5s ease forwards;
+  }
+
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /*
+    Anyone who has asked their system to reduce motion gets the finished state
+    immediately — no fade, no movement, and no chance of content never appearing.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+}

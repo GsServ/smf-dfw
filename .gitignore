@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# Working documents — internal planning, not site source. Not published.
+BRIEF.md
+reference.html
