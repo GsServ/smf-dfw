@@ -47,14 +47,32 @@ values (
 Church slugs: `st-george`, `st-mary`, `st-mark`, `st-meena`, `st-abanoub`,
 `st-philopateer`, `archangel-michael`, `pope-kyrillos`, `st-marina`.
 
+### Changing someone's role or church
+
+Edit the invite. The change reaches them immediately, whether or not they have
+already signed in:
+
+```sql
+update invites
+   set church_id = (select id from churches where slug = 'st-mary')
+ where email = 'servant@example.com';
+```
+
 ### Removing someone's access
 
 ```sql
-delete from invites  where email = 'servant@example.com';
-delete from profiles where user_id = (select id from auth.users where email = 'servant@example.com');
+delete from invites where email = 'servant@example.com';
 ```
 
-Delete the profile, not just the invite — the profile is what grants access.
+That is the whole thing. Their profile — which is what actually grants access —
+is removed with it. Their submissions stay; the church's work is not lost
+because a representative left.
+
+Re-adding the invite restores access, even for somebody who signed in long ago.
+
+**`invites` is the single source of truth.** Do not edit `profiles` by hand; it
+is kept in step by a trigger, and a manual edit will be overwritten the next
+time the invite is touched.
 
 ---
 
