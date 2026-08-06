@@ -7,3 +7,5 @@ dist
 # Working documents — internal planning, not site source. Not published.
 BRIEF.md
 reference.html
+.env.local
+.env*.local

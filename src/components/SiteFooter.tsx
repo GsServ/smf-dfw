@@ -1,6 +1,10 @@
 import { site } from '../content'
 
-export default function SiteFooter() {
+export default function SiteFooter({
+  onNavigate,
+}: {
+  onNavigate?: (path: string) => void
+}) {
   return (
     <footer className="mt-[clamp(40px,6vw,70px)] border-t border-rule pb-[46px] pt-[34px]">
       <div className="wrap">
@@ -12,6 +16,23 @@ export default function SiteFooter() {
             {line}
           </p>
         ))}
+
+        {/* Deliberately quiet. Only church reps need this; everyone else is here
+            for the calendar and shouldn't be nudged toward a sign-in page. */}
+        {onNavigate && (
+          <p className="mt-5">
+            <a
+              href="/portal"
+              onClick={(e) => {
+                e.preventDefault()
+                onNavigate('/portal')
+              }}
+              className="font-mono text-[11px] uppercase tracking-[0.14em] text-gold-label hover:text-gold"
+            >
+              Church representatives → sign in
+            </a>
+          </p>
+        )}
       </div>
     </footer>
   )

@@ -22,11 +22,12 @@ Then open the address it prints. `npm run build` produces `dist/`.
 
 ## How it is put together
 
-React 18 + Vite + TypeScript + Tailwind. No CMS, no backend, no images.
+React 18 + Vite + TypeScript + Tailwind. No images.
+
+**Phase 1 — the public calendar.** No login, no database.
 
 - `src/content/` — all site content as JSON, plus the maintainer guide
-- `src/content/index.ts` — the only place content is loaded. Phase 2 swaps
-  this file for Supabase queries and nothing else changes.
+- `src/content/index.ts` — the only place content is loaded
 - `src/lib/dates.ts` — past/upcoming is computed from the reader's own date at
   render time and never stored, so nothing goes stale
 - `src/lib/coptic.ts` — generates the Coptic numerals on the calendar markers
@@ -34,6 +35,22 @@ React 18 + Vite + TypeScript + Tailwind. No CMS, no backend, no images.
 
 The rules accordion uses native `<details>`/`<summary>` for keyboard and screen
 reader support. Please don't rebuild it with React state.
+
+**Phase 2 — the church portal.** Per-church logins, submission forms, the
+committee dashboard, and deadline reminders. See
+[`supabase/README.md`](supabase/README.md).
+
+- `/` — public calendar. Reads JSON, never touches the database.
+- `/portal` — a church representative's submissions
+- `/committee` — the nine-church status grid
+
+The portal is loaded as a separate chunk, so the public calendar never
+downloads the auth client. **The calendar keeps working even if the database is
+down**, which is the point: most visitors only ever check a date.
+
+The public calendar was deliberately **not** migrated into the database. Editing
+one text file and pushing is the whole maintenance story, and moving the
+calendar behind a login would undo it.
 
 ## Deployment
 

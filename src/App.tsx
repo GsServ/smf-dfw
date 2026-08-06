@@ -1,29 +1,29 @@
-import { useMemo } from 'react'
-import { events } from './content'
-import { findNextIndex, startOfToday } from './lib/dates'
-import DraftBanner from './components/DraftBanner'
-import Masthead from './components/Masthead'
-import NextEvent from './components/NextEvent'
-import SeasonCalendar from './components/SeasonCalendar'
-import RulesAccordion from './components/RulesAccordion'
-import SiteFooter from './components/SiteFooter'
+import { Suspense, lazy } from 'react'
+import { useRoute } from './lib/router'
+import PublicSite from './routes/PublicSite'
+
+// Loaded only when someone actually visits a portal route, so the public
+// calendar never downloads the auth client.
+const PortalApp = lazy(() => import('./routes/PortalApp'))
+
+const PORTAL_ROUTES = ['/portal', '/committee', '/signin']
 
 export default function App() {
-  // Past/upcoming is computed from the reader's own date at render, never
-  // stored. Nothing on this page can go stale on its own.
-  const today = useMemo(() => startOfToday(), [])
-  const nextIndex = useMemo(() => findNextIndex(events, today), [today])
+  const [path, navigate] = useRoute()
 
-  return (
-    <>
-      <DraftBanner />
-      <Masthead />
-      <main>
-        <NextEvent event={nextIndex > -1 ? events[nextIndex] : null} today={today} />
-        <SeasonCalendar events={events} nextIndex={nextIndex} today={today} />
-        <RulesAccordion />
-      </main>
-      <SiteFooter />
-    </>
-  )
+  if (PORTAL_ROUTES.includes(path)) {
+    return (
+      <Suspense
+        fallback={
+          <p className="wrap py-16 text-[15px] text-slate" aria-live="polite">
+            Loading…
+          </p>
+        }
+      >
+        <PortalApp path={path} onNavigate={navigate} />
+      </Suspense>
+    )
+  }
+
+  return <PublicSite onNavigate={navigate} />
 }

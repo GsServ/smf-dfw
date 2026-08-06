@@ -1,0 +1,181 @@
+# The church portal (Phase 2)
+
+Everything behind sign-in: per-church logins, submission forms, the committee
+dashboard, and the deadline reminders.
+
+**The public calendar does not use any of this.** It reads flat JSON files and
+works whether or not the database is up. Updating a date is still a one-file
+edit — see [`src/content/README.md`](../src/content/README.md).
+
+- **Project:** `nhvvevmsibgxnzsbtumy` — <https://nhvvevmsibgxnzsbtumy.supabase.co>
+- **Separate from the St. George Sunday School database (`zpxuaizxrcnztlhvyajf`)**,
+  and it must stay that way. Different project, different credentials, no link
+  between them.
+
+---
+
+## How access works
+
+There is no public registration. A person can only get in if the committee has
+already added their email address.
+
+1. The committee inserts a row into `invites` (email, church, role).
+2. That person enters their address on `/portal` and gets a sign-in link.
+3. On first sign-in, a trigger reads the invite and creates their `profile`.
+4. Signing in with an address that was never invited creates an auth user with
+   **no profile** — and every security policy then denies them everything.
+
+Two roles:
+
+- **`rep`** — belongs to one church. Sees and edits only that church's
+  submissions.
+- **`committee`** — belongs to no church. Reads everything, writes nobody's
+  submissions.
+
+### Adding a church representative
+
+```sql
+insert into invites (email, church_id, role, full_name)
+values (
+  'servant@example.com',
+  (select id from churches where slug = 'st-george'),
+  'rep',
+  'Their Name'
+);
+```
+
+Church slugs: `st-george`, `st-mary`, `st-mark`, `st-meena`, `st-abanoub`,
+`st-philopateer`, `archangel-michael`, `pope-kyrillos`, `st-marina`.
+
+### Removing someone's access
+
+```sql
+delete from invites  where email = 'servant@example.com';
+delete from profiles where user_id = (select id from auth.users where email = 'servant@example.com');
+```
+
+Delete the profile, not just the invite — the profile is what grants access.
+
+---
+
+## Why the security is where it is
+
+Every rule is enforced **in the database**, not in the browser. The key that
+ships in the website grants nothing on its own; anyone can read it from the page
+source, and it was checked to confirm an anonymous caller gets an empty result
+from every single table.
+
+That means a church cannot see another church's roster even by crafting their
+own API request. This was tested directly, not assumed:
+
+- a rep querying all submissions sees only their own church's
+- a rep inserting a row for another church is rejected
+- a rep running `update profiles set role = 'committee'` changes nothing
+
+If you change a policy, re-run those checks.
+
+---
+
+## Validation lives in two places, on purpose
+
+A rule like "a team is 7 youth minimum" is written twice:
+
+- [`src/lib/validateSubmission.ts`](../src/lib/validateSubmission.ts) — runs as
+  the servant types, so a short roster is flagged in the moment
+- `validate_submission()` in the migrations — runs on every write, so the rule
+  holds even against a direct API call
+
+**Change a rule in both places.** The database is the one that actually enforces
+it; the client one is there so the servant finds out immediately rather than the
+week of the event.
+
+Bounds are not hard-coded — they come from each request's `fields` JSON, so
+adding a new form is a data change, not a code change:
+
+```sql
+insert into requests (slug, title, description, due_date, sort_order, fields)
+values (
+  'ping-pong-roster',
+  'Ping pong roster',
+  'Three players per tournament.',
+  '2026-09-01',
+  5,
+  '[{"key":"players","label":"Players","type":"name_list",
+     "min_items":3,"max_items":3,"required":true,
+     "help":"Send 3 per tournament."}]'::jsonb
+);
+```
+
+Field types: `text`, `textarea`, `number` (`min`/`max`), `name_list`
+(`min_items`/`max_items`). Any field may set `required` and `help`.
+
+---
+
+## Dates are reckoned in Central Time, not UTC
+
+The database runs in UTC. Dallas–Fort Worth does not. Between about 7pm and
+midnight Central, UTC has already rolled over to tomorrow — so anything
+comparing against `current_date` would count a day early every evening, and
+could skip a deadline entirely on the day it falls.
+
+Everything date-shaped goes through `festival_today()`, which returns the date
+in `America/Chicago` and handles daylight saving itself. **Use it instead of
+`current_date` in anything you add.**
+
+---
+
+## Reminders
+
+A scheduled job runs daily at 14:00 UTC (9am Central in summer) and calls the
+`send-reminders` edge function. That function asks the database who is
+outstanding at 3 days and 1 day before each deadline, emails them, and records
+what it sent in `reminder_log` so nobody is nudged twice for the same deadline.
+
+### Status: built and scheduled, not yet delivering
+
+Two one-time steps are needed before any email actually goes out. Until then the
+function runs harmlessly and reports what it *would* have sent.
+
+**1. Let the scheduled job authenticate.** In the Supabase SQL editor, paste
+your project's service role key (Project Settings → API):
+
+```sql
+select vault.create_secret('<service role key>', 'service_role_key');
+```
+
+It is stored encrypted, not written into the job definition in plain text.
+
+**2. Set up an email provider.** The function uses [Resend](https://resend.com)
+(free tier: 3,000 emails/month, far more than nine churches need). Sign up, then
+add `RESEND_API_KEY` as an edge function secret. Optionally set `REMINDER_FROM`
+and `SITE_URL` too.
+
+Until a verified domain is added, Resend only delivers to your own address —
+fine for testing, not for the churches.
+
+To see what it would send right now:
+
+```sql
+select * from pending_reminders();
+```
+
+---
+
+## Checking the work
+
+```sql
+-- Who has sent what
+select * from request_status_grid order by church_sort_order, sort_order;
+
+-- Reminders already sent
+select * from reminder_log order by sent_at desc;
+
+-- Who can sign in
+select i.email, i.role, c.name, i.claimed_at
+from invites i left join churches c on c.id = i.church_id;
+```
+
+Run Supabase's security advisor after any schema change. Two warnings are
+expected and intentional: `auth_church_id()` and `auth_is_committee()` must be
+executable by signed-in users because the security policies themselves call
+them. They only ever return the caller's own church and role.
