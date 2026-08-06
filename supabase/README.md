@@ -137,7 +137,23 @@ matters because the publishable key is a valid signed token *and* ships inside
 the website — without the check, a stranger could trigger the send and burn the
 email quota.
 
-### Status: sending, but test-only
+### Status: working, but deliberately dormant
+
+**Decided Aug 2026: reminders are sent by hand in the WhatsApp group instead.**
+
+Not because the automation failed — it was built, tested, and confirmed
+delivering. The dashboard turned out to cover the actual need better. Fr
+Akhnoukh opens the grid, sees which churches are still red, and messages those
+by name in the group the servants already read. Targeted chasing beats another
+channel to check.
+
+The scheduled job stays in place but **does nothing**, because the Vault secret
+below was never added. It is inert, not broken. Adding that secret is what
+switches automated reminders on — so add it only if you actually want them.
+
+To remove the job entirely: `select cron.unschedule('smf-daily-reminders');`
+
+### If you turn it back on: test-only until a domain exists
 
 `RESEND_API_KEY` is configured and delivery is confirmed working end to end.
 
@@ -152,27 +168,30 @@ address on it. Nothing in the code changes.
 **Note:** Resend matches the registered address exactly. Gmail plus-addressing
 (`you+church@gmail.com`) is *rejected* in test mode — tried, does not work.
 
-### Still outstanding
+### To switch automated reminders on later
 
-**Let the scheduled job authenticate.** In the SQL editor, paste your project's
-service role key (Project Settings → API):
+Paste your project's service role key (Project Settings → API) in the SQL
+editor. Nothing else is needed — the job is already scheduled and waiting:
 
 ```sql
 select vault.create_secret('<service role key>', 'service_role_key');
 ```
 
-Stored encrypted, not written into the job definition in plain text. Until this
-exists the daily 9am job runs and does nothing — reminders only send when
-triggered by hand.
+Stored encrypted, not written into the job definition in plain text.
 
-### The current invite list is a test arrangement
+Do this only once a domain is verified, or the churches still receive nothing
+and only Pete's inbox gets the reminders.
 
-Reminders go to **reps**, and Resend will only deliver to the registered
-address. So during testing the registered address holds the rep seat and the
-committee seat sits on a second mailbox. Both belong to Pete.
+### The invite list
 
-Set these to the real people when a domain is verified — the roles and
-permissions do not change, only the addresses.
+The two seats currently mirror the real roles: Pete is St. George's MS/HS
+coordinator, so he holds the **rep** seat; the **committee** seat is Fr
+Akhnoukh's, currently pointed at a second mailbox of Pete's while the site is
+still being shown to him.
+
+Point the committee seat at Fr Akhnoukh's real address when he is ready, and add
+the other eight churches' reps. Roles and permissions do not change — only the
+addresses.
 
 To see what it would send right now:
 
