@@ -28,7 +28,36 @@ interface Reminder {
 const SITE_URL = Deno.env.get('SITE_URL') ?? 'https://smf-dfw.pages.dev'
 const FROM = Deno.env.get('REMINDER_FROM') ?? 'St. Mark Festival <onboarding@resend.dev>'
 
-Deno.serve(async () => {
+/**
+ * Only the scheduled job may run this.
+ *
+ * The platform has already verified the token's signature (verify_jwt), but the
+ * publishable key is a valid signed token too — and it ships inside the website
+ * for anyone to read. Without this check, a stranger could trigger the whole
+ * send and burn the email quota. The scheduler passes the service role key,
+ * which is the only token carrying this claim.
+ */
+function isServiceRole(req: Request): boolean {
+  const header = req.headers.get('Authorization') ?? ''
+  const token = header.replace(/^Bearer\s+/i, '')
+  const payload = token.split('.')[1]
+  if (!payload) return false
+
+  try {
+    const decoded = JSON.parse(
+      atob(payload.replace(/-/g, '+').replace(/_/g, '/')),
+    )
+    return decoded?.role === 'service_role'
+  } catch {
+    return false
+  }
+}
+
+Deno.serve(async (req) => {
+  if (!isServiceRole(req)) {
+    return json({ ok: false, error: 'This endpoint is for the scheduled job only.' }, 403)
+  }
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,

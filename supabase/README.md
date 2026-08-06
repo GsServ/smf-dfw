@@ -131,27 +131,48 @@ A scheduled job runs daily at 14:00 UTC (9am Central in summer) and calls the
 outstanding at 3 days and 1 day before each deadline, emails them, and records
 what it sent in `reminder_log` so nobody is nudged twice for the same deadline.
 
-### Status: built and scheduled, not yet delivering
+Only the scheduled job can run it. The function checks that the caller's token
+carries the `service_role` claim and refuses everything else with a 403. This
+matters because the publishable key is a valid signed token *and* ships inside
+the website — without the check, a stranger could trigger the send and burn the
+email quota.
 
-Two one-time steps are needed before any email actually goes out. Until then the
-function runs harmlessly and reports what it *would* have sent.
+### Status: sending, but test-only
 
-**1. Let the scheduled job authenticate.** In the Supabase SQL editor, paste
-your project's service role key (Project Settings → API):
+`RESEND_API_KEY` is configured and delivery is confirmed working end to end.
+
+**Resend has not been given a verified domain, so it delivers only to the
+address the Resend account was registered with.** Any other recipient comes back
+as a 403 `validation_error`. Nine churches cannot receive anything yet.
+
+To lift that: buy a domain, verify it at
+[resend.com/domains](https://resend.com/domains), and set `REMINDER_FROM` to an
+address on it. Nothing in the code changes.
+
+**Note:** Resend matches the registered address exactly. Gmail plus-addressing
+(`you+church@gmail.com`) is *rejected* in test mode — tried, does not work.
+
+### Still outstanding
+
+**Let the scheduled job authenticate.** In the SQL editor, paste your project's
+service role key (Project Settings → API):
 
 ```sql
 select vault.create_secret('<service role key>', 'service_role_key');
 ```
 
-It is stored encrypted, not written into the job definition in plain text.
+Stored encrypted, not written into the job definition in plain text. Until this
+exists the daily 9am job runs and does nothing — reminders only send when
+triggered by hand.
 
-**2. Set up an email provider.** The function uses [Resend](https://resend.com)
-(free tier: 3,000 emails/month, far more than nine churches need). Sign up, then
-add `RESEND_API_KEY` as an edge function secret. Optionally set `REMINDER_FROM`
-and `SITE_URL` too.
+### The current invite list is a test arrangement
 
-Until a verified domain is added, Resend only delivers to your own address —
-fine for testing, not for the churches.
+Reminders go to **reps**, and Resend will only deliver to the registered
+address. So during testing the registered address holds the rep seat and the
+committee seat sits on a second mailbox. Both belong to Pete.
+
+Set these to the real people when a domain is verified — the roles and
+permissions do not change, only the addresses.
 
 To see what it would send right now:
 
