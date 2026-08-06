@@ -22,6 +22,10 @@ export interface SubmissionRow {
   payload: Payload
   status: 'partial' | 'submitted'
   submitted_at: string | null
+  /** Posted rules this submission breaks. Empty is the normal case. */
+  exceptions: string[]
+  note: string | null
+  approved_at: string | null
 }
 
 /** What one church owes, and the forms to settle it. */

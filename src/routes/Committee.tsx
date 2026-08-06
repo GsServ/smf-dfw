@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../auth/AuthProvider'
 import Shell from '../components/portal/Shell'
@@ -13,63 +13,75 @@ interface GridRow {
   church_name: string
   church_sort_order: number
   status: SubmissionStatus
+  submission_id: string | null
+  exception_count: number
+  exceptions: string[] | null
+  note: string | null
+  approved_at: string | null
+  needs_review: boolean
+}
+
+type CellState = SubmissionStatus | 'needs_review' | 'approved'
+
+function cellState(r: GridRow): CellState {
+  if (r.status !== 'submitted') return r.status
+  if (r.exception_count === 0) return 'submitted'
+  return r.approved_at ? 'approved' : 'needs_review'
 }
 
 /**
- * Nine churches down, open requests across. The question this answers is the one
- * Fr Akhnoukh currently answers by scrolling WhatsApp: who has not sent it yet.
+ * Nine churches down, open requests across — answering the question Fr Akhnoukh
+ * currently answers by scrolling WhatsApp: who has not sent it yet.
+ *
+ * Anything breaking a posted rule surfaces above the grid, because a flag buried
+ * in a cell is a flag nobody acts on.
  */
 export default function Committee({ onNavigate }: { onNavigate: (p: string) => void }) {
   const { profile, loading: authLoading } = useAuth()
   const [rows, setRows] = useState<GridRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [busyId, setBusyId] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    if (!supabase) return
+    const { data } = await supabase.from('request_status_grid').select('*')
+    setRows((data as GridRow[]) ?? [])
+    setLoading(false)
+  }, [])
 
   useEffect(() => {
-    if (!supabase || profile?.role !== 'committee') return
-    let cancelled = false
+    if (profile?.role !== 'committee') return
+    load()
+  }, [profile?.role, load])
 
-    supabase
-      .from('request_status_grid')
-      .select('*')
-      .then(({ data }) => {
-        if (cancelled) return
-        setRows((data as GridRow[]) ?? [])
-        setLoading(false)
-      })
+  async function decide(submissionId: string, approve: boolean) {
+    if (!supabase) return
+    setBusyId(submissionId)
+    await supabase.rpc('approve_submission', {
+      p_submission_id: submissionId,
+      p_approve: approve,
+    })
+    await load()
+    setBusyId(null)
+  }
 
-    return () => {
-      cancelled = true
-    }
-  }, [profile?.role])
-
-  const { churches, requests, cells, missing } = useMemo(() => {
+  const { churches, requests, cells, outstanding, review } = useMemo(() => {
     const churchMap = new Map<string, { id: string; name: string; sort: number }>()
-    const requestMap = new Map<
-      string,
-      { id: string; title: string; due: string | null; sort: number }
-    >()
-    const cells = new Map<string, SubmissionStatus>()
+    const requestMap = new Map<string, { id: string; title: string; due: string | null; sort: number }>()
+    const cells = new Map<string, GridRow>()
 
     for (const r of rows) {
-      churchMap.set(r.church_id, {
-        id: r.church_id,
-        name: r.church_name,
-        sort: r.church_sort_order,
-      })
-      requestMap.set(r.request_id, {
-        id: r.request_id,
-        title: r.request_title,
-        due: r.due_date,
-        sort: r.sort_order,
-      })
-      cells.set(`${r.church_id}:${r.request_id}`, r.status)
+      churchMap.set(r.church_id, { id: r.church_id, name: r.church_name, sort: r.church_sort_order })
+      requestMap.set(r.request_id, { id: r.request_id, title: r.request_title, due: r.due_date, sort: r.sort_order })
+      cells.set(`${r.church_id}:${r.request_id}`, r)
     }
 
     return {
       churches: [...churchMap.values()].sort((a, b) => a.sort - b.sort),
       requests: [...requestMap.values()].sort((a, b) => a.sort - b.sort),
       cells,
-      missing: rows.filter((r) => r.status !== 'submitted').length,
+      outstanding: rows.filter((r) => r.status !== 'submitted').length,
+      review: rows.filter((r) => r.needs_review),
     }
   }, [rows])
 
@@ -90,9 +102,8 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
       subtitle={
         loading
           ? 'Loading…'
-          : missing === 0
-            ? 'Everything is in. Nothing outstanding.'
-            : `${missing} outstanding across ${churches.length} churches.`
+          : `${outstanding} outstanding across ${churches.length} churches.` +
+            (review.length ? ` ${review.length} waiting on your decision.` : '')
       }
       onNavigate={onNavigate}
     >
@@ -100,7 +111,56 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
         <p className="text-[15px] text-slate">Loading…</p>
       ) : (
         <>
-          {/* Wide grids scroll inside their own box rather than the whole page. */}
+          {review.length > 0 && (
+            <section
+              className="mb-8 rounded-[3px] border border-gold/50 bg-gold/[0.07]"
+              aria-labelledby="review-heading"
+            >
+              <h2
+                id="review-heading"
+                className="m-0 border-b border-gold/30 px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-gold"
+              >
+                Exceptions waiting on you
+              </h2>
+
+              <ul className="m-0 list-none p-0">
+                {review.map((r) => (
+                  <li
+                    key={r.submission_id}
+                    className="flex flex-wrap items-start justify-between gap-4 border-b border-gold/20 px-5 py-4 last:border-b-0"
+                  >
+                    <div className="min-w-[240px] flex-1">
+                      <p className="m-0 font-display text-[17px] text-linen-2">
+                        {r.church_name} — {r.request_title}
+                      </p>
+                      <ul className="mt-1.5 list-none space-y-1 p-0">
+                        {(r.exceptions ?? []).map((e, i) => (
+                          <li key={i} className="text-[13.5px] text-gold">
+                            {e}
+                          </li>
+                        ))}
+                      </ul>
+                      {r.note && (
+                        <p className="mt-2 max-w-prose border-l-2 border-gold/40 pl-3 text-[13.5px] italic text-linen">
+                          “{r.note}”
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={busyId === r.submission_id}
+                      onClick={() => decide(r.submission_id!, true)}
+                      className="shrink-0 rounded-[2px] bg-gold px-4 py-2 text-[13px] font-medium text-ink hover:bg-[#E9B857] disabled:opacity-60"
+                    >
+                      {busyId === r.submission_id ? 'Saving…' : 'Approve'}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <div className="overflow-x-auto rounded-[3px] border border-rule">
             <table className="w-full border-collapse text-left">
               <caption className="sr-only">
@@ -139,14 +199,17 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
                     >
                       {c.name}
                     </th>
-                    {requests.map((r) => (
-                      <Cell
-                        key={r.id}
-                        status={cells.get(`${c.id}:${r.id}`) ?? 'missing'}
-                        church={c.name}
-                        request={r.title}
-                      />
-                    ))}
+                    {requests.map((r) => {
+                      const row = cells.get(`${c.id}:${r.id}`)
+                      return (
+                        <Cell
+                          key={r.id}
+                          state={row ? cellState(row) : 'missing'}
+                          church={c.name}
+                          request={r.title}
+                        />
+                      )
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -154,9 +217,11 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
           </div>
 
           <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-            <Key status="submitted" label="Received" />
-            <Key status="partial" label="Started, not sent" />
-            <Key status="missing" label="Nothing yet" />
+            <Key state="submitted" label="Received" />
+            <Key state="approved" label="Approved exception" />
+            <Key state="needs_review" label="Needs your decision" />
+            <Key state="partial" label="Started, not sent" />
+            <Key state="missing" label="Nothing yet" />
           </div>
         </>
       )}
@@ -164,49 +229,51 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
   )
 }
 
+const TONES: Record<CellState, string> = {
+  submitted: 'bg-verd/20 text-[#6FBFAA]',
+  approved: 'bg-verd/20 text-[#6FBFAA]',
+  needs_review: 'bg-gold/20 text-gold',
+  partial: 'bg-gold/15 text-gold',
+  missing: 'bg-madder/20 text-[#E4796A]',
+}
+
+const WORDS: Record<CellState, string> = {
+  submitted: 'Received',
+  approved: 'Approved',
+  needs_review: 'Needs you',
+  partial: 'Draft',
+  missing: 'Not sent',
+}
+
 function Cell({
-  status,
+  state,
   church,
   request,
 }: {
-  status: SubmissionStatus
+  state: CellState
   church: string
   request: string
 }) {
-  const tone =
-    status === 'submitted'
-      ? 'bg-verd/20 text-[#6FBFAA]'
-      : status === 'partial'
-        ? 'bg-gold/15 text-gold'
-        : 'bg-madder/20 text-[#E4796A]'
-
-  const word =
-    status === 'submitted' ? 'Received' : status === 'partial' ? 'Draft' : 'Not sent'
-
   return (
     <td className="border-l border-rule-faint px-4 py-3">
-      <span className={`inline-block rounded-[2px] px-2.5 py-1 text-[12px] ${tone}`}>
+      <span className={`inline-block rounded-[2px] px-2.5 py-1 text-[12px] ${TONES[state]}`}>
         {/* The visible word carries the meaning; colour only reinforces it. */}
         <span className="sr-only">
           {church}, {request}:{' '}
         </span>
-        {word}
+        {WORDS[state]}
       </span>
     </td>
   )
 }
 
-function Key({ status, label }: { status: SubmissionStatus; label: string }) {
-  const tone =
-    status === 'submitted'
-      ? 'bg-verd/20'
-      : status === 'partial'
-        ? 'bg-gold/15'
-        : 'bg-madder/20'
-
+function Key({ state, label }: { state: CellState; label: string }) {
   return (
     <span className="flex items-center gap-2 text-[13px] text-slate">
-      <span className={`inline-block h-3 w-3 rounded-[2px] ${tone}`} aria-hidden="true" />
+      <span
+        className={`inline-block h-3 w-3 rounded-[2px] ${TONES[state].split(' ')[0]}`}
+        aria-hidden="true"
+      />
       {label}
     </span>
   )

@@ -2,27 +2,47 @@ import { daysUntil, startOfToday } from '../../lib/dates'
 
 export type SubmissionStatus = 'submitted' | 'partial' | 'missing'
 
+interface Props {
+  status: SubmissionStatus
+  dueDate?: string | null
+  exceptionCount?: number
+  approvedAt?: string | null
+}
+
 /**
- * Green submitted, yellow partial, red missing — the three states the committee
- * dashboard is built around. Never colour alone: each state carries a word too,
- * so it survives colour blindness and a printout.
+ * Four states, not three. A submission that breaks a posted rule is *received* —
+ * the church has done its part — but still needs Abouna's decision, which is a
+ * different thing from being late.
+ *
+ * Never colour alone: each state carries a word, so it survives colour blindness
+ * and a printout.
  */
 export default function StatusPill({
   status,
   dueDate,
-}: {
-  status: SubmissionStatus
-  dueDate?: string | null
-}) {
-  const style =
-    status === 'submitted'
+  exceptionCount = 0,
+  approvedAt = null,
+}: Props) {
+  const flagged = status === 'submitted' && exceptionCount > 0
+  const awaiting = flagged && !approvedAt
+
+  const style = awaiting
+    ? 'border-gold/50 bg-gold/15 text-gold'
+    : status === 'submitted'
       ? 'border-verd/45 bg-verd/20 text-[#6FBFAA]'
       : status === 'partial'
         ? 'border-gold/45 bg-gold/15 text-gold'
         : 'border-transparent bg-madder text-white'
 
-  const label =
-    status === 'submitted' ? 'Received' : status === 'partial' ? 'Draft' : 'Not sent'
+  const label = awaiting
+    ? 'Needs Abouna'
+    : flagged
+      ? 'Approved'
+      : status === 'submitted'
+        ? 'Received'
+        : status === 'partial'
+          ? 'Draft'
+          : 'Not sent'
 
   return (
     <span className="flex shrink-0 flex-wrap items-center gap-2">

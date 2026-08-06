@@ -1,16 +1,19 @@
-import { filledNames, type FieldSpec } from '../../lib/validateSubmission'
+import { filledNames, type FieldProblem, type FieldSpec } from '../../lib/validateSubmission'
 
 interface Props {
   field: FieldSpec
   value: unknown
-  error?: string
+  problem?: FieldProblem
   onChange: (value: unknown) => void
 }
 
-export default function FieldInput({ field, value, error, onChange }: Props) {
+export default function FieldInput({ field, value, problem, onChange }: Props) {
+  const invalid = problem?.severity === 'error'
+  const flagged = problem?.severity === 'warning'
+
   const describedBy = [
     field.help ? `${field.key}-help` : null,
-    error ? `${field.key}-error` : null,
+    problem ? `${field.key}-problem` : null,
   ]
     .filter(Boolean)
     .join(' ')
@@ -38,27 +41,28 @@ export default function FieldInput({ field, value, error, onChange }: Props) {
             value={value}
             onChange={onChange}
             describedBy={describedBy}
-            invalid={Boolean(error)}
+            invalid={invalid}
+            flagged={flagged}
           />
         ) : field.type === 'textarea' ? (
           <textarea
             id={field.key}
             rows={3}
             value={String(value ?? '')}
-            aria-invalid={Boolean(error)}
+            aria-invalid={invalid}
             aria-describedby={describedBy || undefined}
             onChange={(e) => onChange(e.target.value)}
-            className={inputClass(Boolean(error))}
+            className={inputClass(invalid, flagged)}
           />
         ) : (
           <input
             id={field.key}
             type={field.type === 'number' ? 'number' : 'text'}
             inputMode={field.type === 'number' ? 'numeric' : undefined}
-            min={field.min}
-            max={field.max}
+            /* Deliberately no min/max attributes: the browser would block values
+               Abouna is allowed to permit. The bounds are advisory here. */
             value={String(value ?? '')}
-            aria-invalid={Boolean(error)}
+            aria-invalid={invalid}
             aria-describedby={describedBy || undefined}
             onChange={(e) =>
               onChange(
@@ -69,28 +73,37 @@ export default function FieldInput({ field, value, error, onChange }: Props) {
                   : e.target.value,
               )
             }
-            className={`${inputClass(Boolean(error))} ${field.type === 'number' ? 'max-w-[140px]' : ''}`}
+            className={`${inputClass(invalid, flagged)} ${field.type === 'number' ? 'max-w-[140px]' : ''}`}
           />
         )}
       </div>
 
-      {/* aria-live so the count/limit feedback reaches a screen reader as it changes. */}
       <p
-        id={`${field.key}-error`}
-        role={error ? 'alert' : undefined}
+        id={`${field.key}-problem`}
+        role={invalid ? 'alert' : undefined}
         aria-live="polite"
-        className={`mt-2 text-[13px] ${error ? 'text-madder' : 'sr-only'}`}
+        className={`mt-2 text-[13px] ${
+          invalid ? 'text-madder' : flagged ? 'text-gold' : 'sr-only'
+        }`}
       >
-        {error ?? ''}
+        {problem
+          ? flagged
+            ? `${problem.message} You can still send this — Abouna will be asked to approve it.`
+            : problem.message
+          : ''}
       </p>
     </div>
   )
 }
 
-function inputClass(invalid: boolean) {
-  return `w-full rounded-[2px] border bg-ink-2 px-3 py-2.5 text-[15px] text-linen placeholder:text-slate-dim focus:outline-none ${
-    invalid ? 'border-madder focus:border-madder' : 'border-rule focus:border-gold'
-  }`
+function inputClass(invalid: boolean, flagged = false) {
+  const border = invalid
+    ? 'border-madder focus:border-madder'
+    : flagged
+      ? 'border-gold focus:border-gold'
+      : 'border-rule focus:border-gold'
+
+  return `w-full rounded-[2px] border bg-ink-2 px-3 py-2.5 text-[15px] text-linen placeholder:text-slate-dim focus:outline-none ${border}`
 }
 
 function NameList({
@@ -99,12 +112,14 @@ function NameList({
   onChange,
   describedBy,
   invalid,
+  flagged,
 }: {
   field: FieldSpec
   value: unknown
   onChange: (v: unknown) => void
   describedBy: string
   invalid: boolean
+  flagged: boolean
 }) {
   const names: string[] = Array.isArray(value) ? (value as string[]) : []
   const rows = names.length === 0 ? [''] : names
@@ -114,15 +129,6 @@ function NameList({
     const copy = [...rows]
     copy[i] = next
     onChange(copy)
-  }
-
-  function addRow() {
-    onChange([...rows, ''])
-  }
-
-  function removeRow(i: number) {
-    const copy = rows.filter((_, idx) => idx !== i)
-    onChange(copy.length ? copy : [''])
   }
 
   return (
@@ -141,11 +147,14 @@ function NameList({
               aria-invalid={invalid}
               aria-describedby={i === 0 ? describedBy || undefined : undefined}
               onChange={(e) => update(i, e.target.value)}
-              className={inputClass(invalid)}
+              className={inputClass(invalid, flagged)}
             />
             <button
               type="button"
-              onClick={() => removeRow(i)}
+              onClick={() => {
+                const copy = rows.filter((_, idx) => idx !== i)
+                onChange(copy.length ? copy : [''])
+              }}
               aria-label={`Remove name ${i + 1}`}
               className="shrink-0 rounded-[2px] border border-rule px-2.5 py-2 text-[13px] text-slate hover:border-madder hover:text-madder"
             >
@@ -158,12 +167,16 @@ function NameList({
       <div className="mt-3 flex flex-wrap items-center gap-4">
         <button
           type="button"
-          onClick={addRow}
+          onClick={() => onChange([...rows, ''])}
           className="rounded-[2px] border border-rule px-3 py-1.5 text-[13px] text-linen hover:border-gold hover:text-gold"
         >
           + Add a name
         </button>
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-slate">
+        <span
+          className={`font-mono text-[11px] uppercase tracking-[0.14em] ${
+            flagged ? 'text-gold' : 'text-slate'
+          }`}
+        >
           {count} {count === 1 ? 'name' : 'names'}
           {field.min_items !== undefined && ` · ${field.min_items} minimum`}
           {field.max_items !== undefined && ` · ${field.max_items} maximum`}
