@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { events } from '../content'
 import { findNextIndex, startOfToday } from '../lib/dates'
+import { fetchEventDocuments, type EventDocument } from '../lib/eventDocuments'
 import DraftBanner from '../components/DraftBanner'
 import Masthead from '../components/Masthead'
 import NextEvent from '../components/NextEvent'
@@ -19,13 +20,31 @@ export default function PublicSite({ onNavigate }: { onNavigate: (p: string) => 
   const today = useMemo(() => startOfToday(), [])
   const nextIndex = useMemo(() => findNextIndex(events, today), [today])
 
+  // Attachments load after the calendar is already on screen. If the request
+  // fails the calendar is unaffected — it never waits on the database.
+  const [documents, setDocuments] = useState<Record<string, EventDocument[]>>({})
+  useEffect(() => {
+    let cancelled = false
+    fetchEventDocuments().then((d) => {
+      if (!cancelled) setDocuments(d)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <>
       <DraftBanner />
       <Masthead />
       <main>
         <NextEvent event={nextIndex > -1 ? events[nextIndex] : null} today={today} />
-        <SeasonCalendar events={events} nextIndex={nextIndex} today={today} />
+        <SeasonCalendar
+          events={events}
+          nextIndex={nextIndex}
+          today={today}
+          documents={documents}
+        />
         <RulesAccordion />
       </main>
       <SiteFooter onNavigate={onNavigate} />

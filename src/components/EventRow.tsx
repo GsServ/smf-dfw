@@ -1,6 +1,7 @@
 import type { FestivalEvent } from '../content'
 import { copticNumeral } from '../lib/coptic'
 import { dayOfWeek, shortDate } from '../lib/dates'
+import { describeFile, publicUrl, type EventDocument } from '../lib/eventDocuments'
 
 interface Props {
   event: FestivalEvent
@@ -9,9 +10,17 @@ interface Props {
   next: boolean
   /** Milliseconds of stagger, already capped by the calendar. */
   delay: number
+  documents?: EventDocument[]
 }
 
-export default function EventRow({ event, index, past, next, delay }: Props) {
+export default function EventRow({
+  event,
+  index,
+  past,
+  next,
+  delay,
+  documents = [],
+}: Props) {
   return (
     <li
       className="reveal relative grid grid-cols-[34px_1fr] items-start gap-x-4 gap-y-1.5 border-b border-rule-faint py-[17px] cal:grid-cols-[40px_108px_1fr_auto] cal:gap-x-[clamp(14px,2.5vw,26px)] cal:gap-y-0"
@@ -66,6 +75,27 @@ export default function EventRow({ event, index, past, next, delay }: Props) {
             </>
           )}
         </p>
+
+        {documents.length > 0 && (
+          <ul className="mt-2 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
+            {documents.map((doc) => (
+              <li key={doc.id}>
+                <a
+                  href={publicUrl(doc.storage_path)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-baseline gap-1.5 text-[13px] text-gold underline decoration-gold/40 underline-offset-2 hover:decoration-gold"
+                >
+                  <span aria-hidden="true">↓</span>
+                  {doc.title}
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-gold-label">
+                    {describeFile(doc)}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </span>
 
       <span

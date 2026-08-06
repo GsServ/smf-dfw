@@ -1,4 +1,5 @@
 import type { FestivalEvent } from '../content'
+import type { EventDocument } from '../lib/eventDocuments'
 import { site } from '../content'
 import { isPast } from '../lib/dates'
 import EventRow from './EventRow'
@@ -8,9 +9,10 @@ interface Props {
   events: FestivalEvent[]
   nextIndex: number
   today: Date
+  documents?: Record<string, EventDocument[]>
 }
 
-export default function SeasonCalendar({ events, nextIndex, today }: Props) {
+export default function SeasonCalendar({ events, nextIndex, today, documents = {} }: Props) {
   return (
     <section className="wrap py-[clamp(40px,6vw,68px)]" aria-labelledby="calendar-heading">
       <SectionHead
@@ -28,6 +30,7 @@ export default function SeasonCalendar({ events, nextIndex, today }: Props) {
             past={isPast(event, today)}
             next={i === nextIndex}
             delay={Math.min(i * 45, 450)}
+            documents={documents[event.id]}
           />
         ))}
       </ul>

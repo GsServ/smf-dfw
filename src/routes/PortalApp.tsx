@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from '../auth/AuthProvider'
 import SignIn from './SignIn'
 import Portal from './Portal'
 import Committee from './Committee'
+import EventDocumentsAdmin from './EventDocumentsAdmin'
 
 /**
  * Everything behind sign-in, in one lazily-loaded chunk.
@@ -45,9 +46,7 @@ function PortalRoutes({
   // that would lose the address they were trying to reach.
   if (!session) return <SignIn onNavigate={onNavigate} />
 
-  return path === '/committee' ? (
-    <Committee onNavigate={onNavigate} />
-  ) : (
-    <Portal onNavigate={onNavigate} />
-  )
+  if (path === '/committee') return <Committee onNavigate={onNavigate} />
+  if (path === '/documents') return <EventDocumentsAdmin onNavigate={onNavigate} />
+  return <Portal onNavigate={onNavigate} />
 }
