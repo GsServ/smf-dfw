@@ -1,10 +1,10 @@
 {
-  "seasonYear": 2026,
+  "seasonYear": 2027,
   "draftBanner": {
-    "show": true,
+    "show": false,
     "text": "Draft preview — not published"
   },
-  "eyebrow": "St. Mark Festival · Mahragan al-Keraza · DFW 2026",
+  "eyebrow": "St. Mark Festival · Mahragan al-Keraza · DFW 2027",
   "themeLines": ["We Are More", "Than *Conquerors*"],
   "verse": "Romans 8:37",
   "calendarHeading": "Season calendar",
