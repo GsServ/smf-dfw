@@ -35,6 +35,24 @@ export function parseDate(iso: string): Date {
   return new Date(y, m - 1, d)
 }
 
+/** YYYY-MM-DD for a local Date. The inverse of parseDate. */
+export function toIso(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+/**
+ * The same date `days` later. Rolling a season forward by a multiple of seven
+ * lands every event on the weekday it already had, which is what the calendar
+ * is actually built around — Sunday basketball, Saturday tournaments.
+ */
+export function addDays(iso: string, days: number): string {
+  const date = parseDate(iso)
+  date.setDate(date.getDate() + days)
+  return toIso(date)
+}
+
 /** Today at local midnight, so comparisons are day-level and not time-of-day. */
 export function startOfToday(now: Date = new Date()): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())

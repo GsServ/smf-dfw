@@ -1,8 +1,8 @@
 {
   "seasonYear": 2027,
   "draftBanner": {
-    "show": false,
-    "text": "Draft preview — not published"
+    "show": true,
+    "text": "2027 dates not yet confirmed"
   },
   "eyebrow": "St. Mark Festival · Mahragan al-Keraza · DFW 2027",
   "themeLines": ["We Are More", "Than *Conquerors*"],

@@ -83,6 +83,35 @@ a comma between the two blocks. Save, then commit and push.
 
 ---
 
+## Starting a new season
+
+**Nobody has to edit this file by hand for the yearly roll.** A committee account
+signed in at **`/dates`** gets the whole calendar as a form — a date picker per
+event, plus a control that moves the entire season forward at once. It ends with
+a Download button that produces a finished `events.json`.
+
+That screen writes nothing. It hands back a file, which somebody then saves over
+`src/content/events.json` and pushes, exactly as described below. The calendar
+stays a flat file on purpose, and going through a form does not change that.
+
+Two things about the roll are worth knowing whichever way you do it:
+
+- **Move the season by whole weeks, not by a year.** 52 weeks lands every event
+  on the weekday it already had — Sunday tournaments stay on Sunday. "Same date
+  next year" silently scatters them across the week. The form defaults to 52.
+- **Watch any time that spells out a date.** "Closes 11:59 PM Jul 26" has a date
+  buried in ordinary text; move the event and that sentence is suddenly wrong.
+  The form rewrites these for you when you shift the season and refuses to export
+  a row where the sentence and the date disagree. Editing the file by hand, you
+  have to catch it yourself.
+
+The dates are only part of a new season. The theme lines and verse in
+`site.json`, the venues on each event, the `posted` dates in `rules.json`, and
+any rule that says "this year" all belong to the season that just finished.
+Go through them before announcing the new calendar.
+
+---
+
 ## `rules.json` — the rules section
 
 One block per topic:

@@ -47,6 +47,10 @@ committee dashboard, and deadline reminders. See
 - `/` — public calendar. Reads JSON, never touches the database.
 - `/portal` — a church representative's submissions
 - `/committee` — the nine-church status grid
+- `/documents` — committee: attach a PDF or photo to an event
+- `/dates` — committee: next season's calendar as a form, exported as
+  `events.json` for a maintainer to commit. It writes nothing itself; the
+  calendar stays a flat file.
 
 The portal is loaded as a separate chunk, so the public calendar never
 downloads the auth client. **The calendar keeps working even if the database is

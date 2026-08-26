@@ -107,7 +107,7 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
       }
       onNavigate={onNavigate}
     >
-      <p className="mb-6">
+      <div className="mb-6 flex flex-wrap gap-3">
         <button
           type="button"
           onClick={() => onNavigate('/documents')}
@@ -115,7 +115,14 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
         >
           Post rules or a document →
         </button>
-      </p>
+        <button
+          type="button"
+          onClick={() => onNavigate('/dates')}
+          className="rounded-[2px] border border-rule px-4 py-2 text-[13.5px] text-linen hover:border-gold hover:text-gold"
+        >
+          Set the season dates →
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-[15px] text-slate">Loading…</p>

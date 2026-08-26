@@ -3,6 +3,7 @@ import SignIn from './SignIn'
 import Portal from './Portal'
 import Committee from './Committee'
 import EventDocumentsAdmin from './EventDocumentsAdmin'
+import SeasonDates from './SeasonDates'
 
 /**
  * Everything behind sign-in, in one lazily-loaded chunk.
@@ -48,5 +49,6 @@ function PortalRoutes({
 
   if (path === '/committee') return <Committee onNavigate={onNavigate} />
   if (path === '/documents') return <EventDocumentsAdmin onNavigate={onNavigate} />
+  if (path === '/dates') return <SeasonDates onNavigate={onNavigate} />
   return <Portal onNavigate={onNavigate} />
 }
