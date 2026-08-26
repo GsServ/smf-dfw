@@ -117,10 +117,10 @@ export default function Committee({ onNavigate }: { onNavigate: (p: string) => v
         </button>
         <button
           type="button"
-          onClick={() => onNavigate('/dates')}
-          className="rounded-[2px] border border-rule px-4 py-2 text-[13.5px] text-linen hover:border-gold hover:text-gold"
+          onClick={() => onNavigate('/season')}
+          className="rounded-[2px] border border-gold/60 px-4 py-2 text-[13.5px] text-gold hover:bg-gold/10"
         >
-          Set the season dates →
+          Starting a new season →
         </button>
       </div>
 

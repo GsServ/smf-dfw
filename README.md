@@ -48,9 +48,21 @@ committee dashboard, and deadline reminders. See
 - `/portal` — a church representative's submissions
 - `/committee` — the nine-church status grid
 - `/documents` — committee: attach a PDF or photo to an event
-- `/dates` — committee: next season's calendar as a form, exported as
-  `events.json` for a maintainer to commit. It writes nothing itself; the
-  calendar stays a flat file.
+- `/season` — committee: the start-of-season checklist, and the way in to
+  the three editors below
+- `/dates` — committee: the calendar as a form → `events.json`
+- `/rules` — committee: the rules as a form → `rules.json`
+- `/theme` — committee: theme, verse, season year, banner → `site.json`
+
+The three editors **write nothing**. Each hands back a finished content file
+for a maintainer to commit, so the site's content stays flat JSON and the
+public calendar keeps working whatever happens to the database. Exported
+without edits, each reproduces its committed file byte for byte — so a round
+trip through a form is a zero-line diff. Keep it that way: if you reformat a
+content file by hand, reformat the exporter to match.
+
+The checklist at `/season` is the one piece of committee state in the
+database (`season_tasks`) — it remembers only which steps are ticked.
 
 The portal is loaded as a separate chunk, so the public calendar never
 downloads the auth client. **The calendar keeps working even if the database is

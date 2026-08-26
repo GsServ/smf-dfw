@@ -85,14 +85,24 @@ a comma between the two blocks. Save, then commit and push.
 
 ## Starting a new season
 
-**Nobody has to edit this file by hand for the yearly roll.** A committee account
-signed in at **`/dates`** gets the whole calendar as a form — a date picker per
-event, plus a control that moves the entire season forward at once. It ends with
-a Download button that produces a finished `events.json`.
+**Nobody has to edit these files by hand for the yearly roll.** A committee
+account signed in at **`/season`** gets a checklist of everything that changes
+when a season turns over, and a way in to a form for each of them:
 
-That screen writes nothing. It hands back a file, which somebody then saves over
-`src/content/events.json` and pushes, exactly as described below. The calendar
-stays a flat file on purpose, and going through a form does not change that.
+| Screen | Edits | Produces |
+|---|---|---|
+| `/theme` | Theme, verse, season year, the notice strip | `site.json` |
+| `/dates` | Every event's date, time and venue | `events.json` |
+| `/rules` | Every rule, and its posted note | `rules.json` |
+
+Each one ends with a Download button. None of them write anything: they hand
+back a file, which somebody saves over the matching file in this folder and
+pushes, exactly as described below. The content stays flat JSON on purpose, and
+going through a form does not change that.
+
+Downloading without making any change gives you back the file you already have,
+character for character — so if a diff shows lines you did not touch, something
+is wrong and it is worth looking before you push.
 
 Two things about the roll are worth knowing whichever way you do it:
 

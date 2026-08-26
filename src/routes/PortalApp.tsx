@@ -3,7 +3,10 @@ import SignIn from './SignIn'
 import Portal from './Portal'
 import Committee from './Committee'
 import EventDocumentsAdmin from './EventDocumentsAdmin'
+import SeasonStart from './SeasonStart'
 import SeasonDates from './SeasonDates'
+import SeasonRules from './SeasonRules'
+import SeasonTheme from './SeasonTheme'
 
 /**
  * Everything behind sign-in, in one lazily-loaded chunk.
@@ -49,6 +52,9 @@ function PortalRoutes({
 
   if (path === '/committee') return <Committee onNavigate={onNavigate} />
   if (path === '/documents') return <EventDocumentsAdmin onNavigate={onNavigate} />
+  if (path === '/season') return <SeasonStart onNavigate={onNavigate} />
   if (path === '/dates') return <SeasonDates onNavigate={onNavigate} />
+  if (path === '/rules') return <SeasonRules onNavigate={onNavigate} />
+  if (path === '/theme') return <SeasonTheme onNavigate={onNavigate} />
   return <Portal onNavigate={onNavigate} />
 }

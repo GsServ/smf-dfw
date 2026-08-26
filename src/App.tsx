@@ -6,7 +6,16 @@ import PublicSite from './routes/PublicSite'
 // calendar never downloads the auth client.
 const PortalApp = lazy(() => import('./routes/PortalApp'))
 
-const PORTAL_ROUTES = ['/portal', '/committee', '/documents', '/dates', '/signin']
+const PORTAL_ROUTES = [
+  '/portal',
+  '/committee',
+  '/documents',
+  '/season',
+  '/dates',
+  '/rules',
+  '/theme',
+  '/signin',
+]
 
 export default function App() {
   const [path, navigate] = useRoute()
