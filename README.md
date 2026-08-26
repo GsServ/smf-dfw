@@ -3,7 +3,11 @@
 Public site for the St. Mark Festival (Mahragan al-Keraza), DFW region. Season
 calendar, rules, and a live countdown for nine Coptic Orthodox churches.
 
-**Phase 1: static, no login, no database.**
+Live at <https://smf-dfw.pages.dev/>.
+
+**The public calendar is static — no login, no database.** The church portal
+behind `/portal` is Phase 2 and does use one; the two are kept apart on purpose,
+so the calendar cannot be taken down by the database.
 
 ## Updating the site
 

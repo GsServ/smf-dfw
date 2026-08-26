@@ -88,7 +88,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       profile,
-      loading,
+      // Signed in but the profile lookup still in flight counts as loading.
+      // Without this the role is briefly unknown, and every screen that gates
+      // on it — the committee dashboard above all — renders its refusal for a
+      // round trip before the real page appears.
+      loading: loading || (Boolean(session) && !profileChecked),
       notInvited: Boolean(session) && profileChecked && profile === null,
       signOut: async () => {
         await supabase?.auth.signOut()

@@ -81,7 +81,14 @@ time the invite is touched.
 Every rule is enforced **in the database**, not in the browser. The key that
 ships in the website grants nothing on its own; anyone can read it from the page
 source, and it was checked to confirm an anonymous caller gets an empty result
-from every single table.
+from every table except `event_documents`.
+
+`event_documents` is readable by anyone on purpose — the public calendar fetches
+it so a servant can open the rules for a game without an account, and the
+`event-documents` storage bucket is public for the same reason. Only committee
+accounts can write to either. **Nothing with a child's name in it belongs in
+that bucket**; the upload screen says so, and that warning is the only thing
+standing between a roster and the open web.
 
 That means a church cannot see another church's roster even by crafting their
 own API request. This was tested directly, not assumed:
@@ -233,7 +240,17 @@ select i.email, i.role, c.name, i.claimed_at
 from invites i left join churches c on c.id = i.church_id;
 ```
 
-Run Supabase's security advisor after any schema change. Two warnings are
-expected and intentional: `auth_church_id()` and `auth_is_committee()` must be
-executable by signed-in users because the security policies themselves call
-them. They only ever return the caller's own church and role.
+Run Supabase's security advisor after any schema change. Five warnings are
+expected and intentional — anything beyond these is worth reading properly:
+
+- `auth_church_id()` and `auth_is_committee()` are executable by signed-in
+  users because the security policies themselves call them. They only ever
+  return the caller's own church and role.
+- `approve_submission()` is executable by signed-in users because the committee
+  calls it from the dashboard. Its first statement is `if not
+  auth_is_committee() then raise`, so a rep calling it directly gets an error
+  and changes nothing.
+- `pg_net` sits in the `public` schema. Supabase installs it there itself when
+  `pg_cron` needs to call an edge function; it is not ours to move.
+- Leaked-password protection is off because there are no passwords. Sign-in is
+  a magic link and nothing else.

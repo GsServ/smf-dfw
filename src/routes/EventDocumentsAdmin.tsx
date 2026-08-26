@@ -95,6 +95,11 @@ export default function EventDocumentsAdmin({
 
   async function handleDelete(doc: EventDocument) {
     if (!supabase) return
+    // One misplaced tap would otherwise pull a posted rule off the public
+    // calendar with nothing to undo it — the file is deleted, not archived.
+    if (!window.confirm(`Remove “${doc.title}” from the calendar? This cannot be undone.`)) {
+      return
+    }
     setBusy(true)
     await supabase.storage.from('event-documents').remove([doc.storage_path])
     await supabase.from('event_documents').delete().eq('id', doc.id)
