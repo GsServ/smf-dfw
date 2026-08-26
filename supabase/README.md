@@ -207,6 +207,67 @@ Stored encrypted, not written into the job definition in plain text.
 Do this only once a domain is verified, or the churches still receive nothing
 and only Pete's inbox gets the reminders.
 
+---
+
+## Reading names off a screenshot
+
+Servants send lists of children in the WhatsApp group as pictures. The
+`read-roster` edge function takes one of those pictures and returns the names,
+so a roster form can be filled by checking a list instead of typing twenty
+names on a phone.
+
+### Status: built, deployed nowhere, switched off
+
+**This is not running.** The function is in the repository and nothing has been
+deployed, because turning it on is a decision about children's names and not a
+technical step.
+
+### What it does with the picture
+
+- The picture goes to the Anthropic API and nowhere else. It is **not** written
+  to the database, **not** put in storage, and **not** logged. It exists for the
+  length of one request.
+- Only somebody with a profile can call it — signed in *and* invited. Without
+  that check, any signed-in address could spend the API budget.
+- **Nothing reaches the form on its own.** The names come back as tick boxes the
+  servant reviews, corrects and confirms. That is deliberate: the reader is good
+  but not perfect, and a misspelt child's name that nobody looked at is worse
+  than one typed by hand.
+
+### The decision to make first
+
+Switching this on means **children's names, in a photograph, leave this project
+and go to Anthropic** to be read. That is a real change in where the churches'
+data goes, and it is Fr Akhnoukh's call rather than a maintainer's. Anthropic's
+API does not train on API traffic, but the names still travel, and the parents
+of those children have not been asked.
+
+Two lighter alternatives, if the answer is no:
+
+- Leave it off. Servants type the names, as now.
+- On-device OCR (something like Tesseract in the browser) never sends anything
+  anywhere, but reads transliterated Coptic and Arabic names poorly, which for
+  this particular list is most of the value gone.
+
+### To switch it on
+
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+supabase functions deploy read-roster
+```
+
+Then open a roster form, press **Read names from a picture**, and try a real
+screenshot from the group before telling anybody it works. It uses
+`claude-opus-5` with vision; one screenshot is a fraction of a cent.
+
+Without the key the function still deploys and answers every request with a
+plain "not switched on for this site yet" — the same arrangement the reminders
+had before Resend existed. The button in the form surfaces that message and the
+servant types the names instead, so a half-configured deployment degrades to
+exactly what exists today.
+
+---
+
 ### The invite list
 
 The two seats currently mirror the real roles: Pete is St. George's MS/HS
