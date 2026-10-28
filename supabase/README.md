@@ -202,14 +202,16 @@ and only Pete's inbox gets the reminders.
 
 ### The invite list
 
-The two seats currently mirror the real roles: Pete is St. George's MS/HS
-coordinator, so he holds the **rep** seat; the **committee** seat is Fr
-Akhnoukh's, currently pointed at a second mailbox of Pete's while the site is
-still being shown to him.
+The two seats mirror the real roles: Pete is St. George's MS/HS coordinator, so
+he holds the **rep** seat; the **committee** seat is Fr Akhnoukh's, pointed at
+his real address since October 2026.
 
-Point the committee seat at Fr Akhnoukh's real address when he is ready, and add
-the other eight churches' reps. Roles and permissions do not change — only the
-addresses.
+He has not signed in yet — `claimed_at` is still null, and his profile is
+created the first time he uses the link. Nothing is sent to him by adding the
+invite; sign-in only starts when he enters his own address on `/portal`.
+
+Still to add: the other eight churches' reps. Roles and permissions do not
+change — only the addresses.
 
 To see what it would send right now:
 
